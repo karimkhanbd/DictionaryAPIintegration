@@ -24,11 +24,15 @@ Prerequisites:
 Steps:
 
 1.	Clone the Repository:
+   
             git clone [https://github.com/karimkhanbd/DictionaryApp]
             cd DictionaryApp
+  	
 2.	Run from the Host Project: Navigate to the main executable project and run it.
-   cd DictionaryApp.Host
+   
+            cd DictionaryApp.Host
             dotnet run
+  	
 3.	Usage: The console will prompt you to enter a word. Type the word and press Enter. Type exit to close the application.
 
 Project Architecture: 
