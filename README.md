@@ -48,7 +48,8 @@ The solution includes the DictionaryApp.Application.Tests project for unit testi
 xUnit	: The testing framework used to define and run tests.
 Moq	: The mocking framework used to isolate the Application layer.	We can test GetWordDefinitionQuery logic without making real network calls.
 
-How to Run Unit Tests
+How to Run Unit Tests:
+
 Open your terminal at the solution root (DictionaryApp/).
 Execute the .NET test command:  dotnet test
 
