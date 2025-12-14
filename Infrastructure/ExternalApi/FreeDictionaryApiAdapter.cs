@@ -1,20 +1,27 @@
-﻿using Domain.Entities;
-using Domain.Services;
+﻿using Domain.Services;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.ExternalApi
 {
     public class FreeDictionaryApiAdapter : IDictionaryService
     {
         private readonly HttpClient _httpClient;
-        private const string BaseUrl = "https://api.dictionaryapi.dev/api/v2/entries/en/";
+        private readonly string _baseUrl;
 
-        public FreeDictionaryApiAdapter(HttpClient httpClient)
+        public FreeDictionaryApiAdapter(HttpClient httpClient, IOptions<ApiConfiguration> apiConfig)
         {
             _httpClient = httpClient;
+
+            _baseUrl = apiConfig.Value.BaseUrl;
+
+            if (string.IsNullOrEmpty(_baseUrl))
+            {
+                throw new ArgumentNullException(nameof(apiConfig), "API BaseUrl configuration is missing or empty.");
+            }
         }
 
-        public async Task<WordDefinition> GetDefinitionAsync(string word)
+        public async Task<WordDefinition?> GetDefinitionAsync(string word)
         {
             try
             {                
@@ -23,7 +30,7 @@ namespace Infrastructure.ExternalApi
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                 };
                 
-                var responseStream = await _httpClient.GetStreamAsync($"{BaseUrl}{word}");
+                var responseStream = await _httpClient.GetStreamAsync($"{_baseUrl}{word}");
                 
                 var apiResponse = await JsonSerializer.DeserializeAsync<List<ApiDictionaryResponse>>(
                     responseStream, options);
@@ -53,45 +60,46 @@ namespace Infrastructure.ExternalApi
         {
             // 1. Map all phonetic entries (including audio, source, and license)
             var phonetics = apiResponse.Phonetics?
-                .Where(p => !string.IsNullOrEmpty(p.Text) || !string.IsNullOrEmpty(p.Audio)) // Only map useful phonetic entries
+                .Where(p => !string.IsNullOrEmpty(p.Text) || !string.IsNullOrEmpty(p.Audio)) 
                 .Select(p => new PhoneticInfo
-                {
-                    Text = p.Text,
-                    AudioUrl = p.Audio,
-                    SourceUrl = p.SourceUrl,
-                    License = p.License != null ? new LicenseInfo
-                    {
-                        Name = p.License.Name,
-                        Url = p.License.Url
-                    } : null
-                })
+                (
+                    Text : p.Text ?? string.Empty,
+                    AudioUrl: p.Audio ?? string.Empty,
+                    SourceUrl: p.SourceUrl ?? string.Empty,
+                    License: p.License != null ? new LicenseInfo
+                    (
+                         p.License.Name,
+                         p.License.Url
+                    ) : null
+                ))
                 .ToList() ?? new List<PhoneticInfo>();
 
             // 2. Map Meanings and Definitions (unchanged from previous fix)
             var definitions = apiResponse.Meanings?
                 .SelectMany(m => m.Definitions.Select(d => new Definition
-                {
-                    PartOfSpeech = m.PartOfSpeech,
-                    Text = d.Definition,
-                    Example = d.Example,
+                    (
+                    PartOfSpeech: m.PartOfSpeech ?? string.Empty,
+                    Text: d.Definition,
+                    Example: d.Example ?? string.Empty
+                    )
+                    {
                     Synonyms = d == m.Definitions.First() ? m.Synonyms ?? new List<string>() : new List<string>(),
                     Antonyms = d == m.Definitions.First() ? m.Antonyms ?? new List<string>() : new List<string>()
-                }))
+                    }
+                ))
                 .ToList() ?? new List<Definition>();
 
             // 3. Construct the final WordDefinition
             return new WordDefinition
-            {
-                Word = apiResponse.Word,
+              (
+                Word: apiResponse.Word,
+                License: apiResponse.License != null ? new LicenseInfo(apiResponse.License.Name, apiResponse.License.Url) : null
+              )
+             {
                 Phonetics = phonetics,
                 Definitions = definitions,
-                License = apiResponse.License != null ? new LicenseInfo 
-                {
-                    Name = apiResponse.License.Name,
-                    Url = apiResponse.License.Url
-                } : null,
-                SourceUrls = apiResponse.SourceUrls ?? new List<string>() 
-            };
+                SourceUrls = apiResponse.SourceUrls ?? new List<string>()
+             };
         }
     }
 }

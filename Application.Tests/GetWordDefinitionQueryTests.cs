@@ -1,5 +1,4 @@
 ﻿using Application.UseCases;
-using Domain.Entities;
 using Domain.Services;
 using Moq;
 
@@ -23,7 +22,13 @@ namespace Application.Tests
     {
         
         string word = "hello";
-        var expectedDefinition = new WordDefinition { Word = word, Phonetics = new List<PhoneticInfo>() };  
+        var expectedDefinition = new WordDefinition ( 
+             Word : word,
+             License:null)
+        { 
+            
+            Phonetics = new List<PhoneticInfo>() 
+        };  
             
         _mockService.Setup(s => s.GetDefinitionAsync(word))
                     .ReturnsAsync(expectedDefinition);
@@ -44,7 +49,7 @@ namespace Application.Tests
         string word = "notfoundword";
 
         _mockService.Setup(s => s.GetDefinitionAsync(word))
-                    .ReturnsAsync((WordDefinition)null); 
+                    .ReturnsAsync(default(WordDefinition)); 
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.ExecuteAsync(word));
         

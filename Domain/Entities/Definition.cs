@@ -1,11 +1,8 @@
-﻿namespace Domain.Entities
+﻿public record Definition(
+      string PartOfSpeech,
+      string Text,
+      string Example)
 {
-    public  class Definition
-    {
-        public string PartOfSpeech { get; set; }
-        public string Text { get; set; }        
-        public string Example { get; set; }
-        public IEnumerable<string> Synonyms { get; set; } = new List<string>();
-        public IEnumerable<string> Antonyms { get; set; } = new List<string>();
-    }
+    public IEnumerable<string> Synonyms { get; init; } =new List<string>();
+    public IEnumerable<string> Antonyms { get; init; } =new List<string>();
 }

@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Infrastructure.ExternalApi
-{
-    public class ApiLicense
-    {
-        public string Name { get; set; }
-        public string Url { get; set; }
-    }
-}
+﻿    //Using record types for immutable, concise DTOs
+    public record  ApiLicense (
+        string Name,
+        string Url
+        );
+    

@@ -1,24 +1,48 @@
 ﻿using Application.UseCases;
-using Infrastructure.ExternalApi;
 using Domain.Services;
+using Infrastructure.ExternalApi;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-using IHost host = Host.CreateDefaultBuilder(args)
+
+using IHost host =  Host.CreateDefaultBuilder(args)
+     .ConfigureAppConfiguration((context, config) =>
+     {
+         // ensures the secret manager file is loaded into the configuration stack        
+         config.AddUserSecrets(typeof(Program).Assembly, optional: true);
+     })
     .ConfigureLogging(logging =>
+        {
+            logging.ClearProviders();
+            logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Warning);
+            logging.AddFilter("Microsoft", LogLevel.Error);
+            logging.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Error);
+        })
+    .ConfigureServices((context, services) =>
     {
-        logging.ClearProviders();
-        logging.AddConsole();
-        logging.SetMinimumLevel(LogLevel.Warning);
-        logging.AddFilter("Microsoft", LogLevel.Error);
-        logging.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Error);
-    })
-    .ConfigureServices(services =>
-    {
-        services.AddHttpClient<IDictionaryService, FreeDictionaryApiAdapter>();
+
+        services.AddOptions<ApiConfiguration>()
+           .Bind(context.Configuration.GetSection("Api"))
+           .Validate(cfg => !string.IsNullOrWhiteSpace(cfg.BaseUrl),
+               "Api:BaseUrl is not configured. Set it via user-secrets: dotnet user-secrets set \"Api:BaseUrl\" \"...\"")
+           .ValidateOnStart();
+
+        services.AddHttpClient<IDictionaryService, FreeDictionaryApiAdapter>((serviceProvider, client) =>
+        {
+            var apiConfig = serviceProvider.GetRequiredService<IOptions<ApiConfiguration>>().Value;          
+            client.BaseAddress = new Uri(apiConfig.BaseUrl);
+        });
+        
         services.AddTransient<GetWordDefinitionQuery>();
+
+
     }).Build();
+
+var configuration = host.Services.GetRequiredService<IConfiguration>();
 
 await RunApp(host.Services);
 Console.WriteLine("\nPress any key to exit...");
@@ -127,5 +151,43 @@ static async Task RunApp(IServiceProvider services)
         {
             Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
         }
+    }
+}
+
+
+/// <summary>
+/// TEMP: Tests if the 'Api:BaseUrl' is loaded from any source (secrets, env vars, etc.).
+/// </summary>
+public class ConfigurationTester : BackgroundService
+{
+    private readonly IConfiguration _config;
+    private readonly IHostApplicationLifetime _lifetime;
+
+    public ConfigurationTester(IConfiguration config, IHostApplicationLifetime lifetime)
+    {
+        _config = config;
+        _lifetime = lifetime;
+    }
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        // Check the raw configuration key for the value
+        var value = _config.GetValue<string>("Api:BaseUrl");
+
+        Console.WriteLine("\n==============================================");
+        if (string.IsNullOrEmpty(value))
+        {
+            Console.WriteLine("🔴 CONFIG ERROR: 'Api:BaseUrl' is NOT loaded from any source.");
+            Console.WriteLine("Possible causes: 1. ASPNETCORE_ENVIRONMENT is not 'Development'. 2. Secret is missing/misspelled.");
+        }
+        else
+        {
+            Console.WriteLine($"✅ CONFIG SUCCESS: 'Api:BaseUrl' loaded as: {value}");
+        }
+        Console.WriteLine("==============================================");
+
+        // Stop the app after testing
+        _lifetime.StopApplication();
+        return Task.CompletedTask;
     }
 }

@@ -1,11 +1,10 @@
-﻿namespace Domain.Entities
+﻿public record WordDefinition(
+     string Word,
+     LicenseInfo? License
+  )
 {
-    public class WordDefinition
-    {
-        public string Word { get; set; }       
-        public List<PhoneticInfo> Phonetics { get; set; } = new List<PhoneticInfo>();
-        public List<Definition> Definitions { get; set; } = new List<Definition>();
-        public LicenseInfo License { get; set; }
-        public List<string> SourceUrls { get; set; } = new List<string>();
-    }
+    public List<PhoneticInfo> Phonetics { get; init; } = new List<PhoneticInfo>();
+    public List<Definition> Definitions { get; init; } = new List<Definition>();
+    public List<string> SourceUrls { get; init; } = new List<string>();
 }
+

@@ -1,8 +1,7 @@
-﻿namespace Infrastructure.ExternalApi
-{
-    public class ApiDefinition
-    {
-        public string Definition { get; set; }
-        public string Example { get; set; } 
-    }
-}
+﻿    //Using record types for immutable, concise DTOs
+    public record ApiDefinition(
+        string Definition, 
+        string? Example
+        );
+    
+
