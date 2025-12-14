@@ -1,4 +1,4 @@
-                                                                     Clean Architecture Dictionary Console App
+                                          Clean Architecture Dictionary Console App
 
 This project is a simple C# console application designed to retrieve word definitions, phonetic details, and examples from a public dictionary API.
 The main goal of this project is to demonstrate Clean Architecture, SOLID Principles, and professional software development practices, including Dependency Injection (DI) and comprehensive Unit Testing (xUnit/Moq).
