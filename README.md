@@ -62,3 +62,7 @@ Endpoint: https://api.dictionaryapi.dev/api/v2/entries/en/{word}
 License:
 
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+Expected output  will as below:
+
+
