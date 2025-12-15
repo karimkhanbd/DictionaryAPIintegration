@@ -65,4 +65,7 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 Expected output  will as below:
 
+![expected output](https://github.com/user-attachments/assets/17f9903e-eda3-4ddc-96c3-d486aead6e50)
+
+
 
