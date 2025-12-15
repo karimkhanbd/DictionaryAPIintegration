@@ -25,7 +25,7 @@ Steps:
 
 1.	Clone the Repository:
    
-            git clone (https://github.com/karimkhanbd/DictionaryApp.git)
+            git clone (https://github.com/karimkhanbd/DictionaryAPIintegration.git)
   	        cd DictionaryApp
   	
 3.	Run from the Host Project: Navigate to the main executable project and run it.
