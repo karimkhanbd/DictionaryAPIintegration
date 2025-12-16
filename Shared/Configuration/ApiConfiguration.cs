@@ -1,5 +1,4 @@
-﻿public class ApiConfiguration
- {
+﻿public record ApiConfiguration
+{
     public required string BaseUrl { get; init; }
 }
-

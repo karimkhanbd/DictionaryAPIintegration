@@ -84,55 +84,57 @@ static async Task RunApp(IServiceProvider services)
             var result = await query.ExecuteAsync(word);
 
             Console.WriteLine($"word: {result.Word}");
+            if (result.Phonetic != null && result.Phonetic.Any())
+                    Console.WriteLine($"phonetic: {result.Phonetic}");
 
             if (result.Phonetics.Any())
             {
-                Console.WriteLine("\n Phonetics :");
+                Console.WriteLine("\nphonetics :");
 
                 foreach (var pInfo in result.Phonetics)
                 {
-                    Console.WriteLine($"\n    Text: {pInfo.Text ?? "N/A"}");
+                    if (pInfo.Text != null && pInfo.Text.Any())
+                        Console.WriteLine($"\n    Text: {pInfo.Text }");
 
                     if (!string.IsNullOrEmpty(pInfo.AudioUrl))
-                        Console.WriteLine($"    Audio URL: {pInfo.AudioUrl}");
+                        Console.WriteLine($"    audio: {pInfo.AudioUrl}");
                     if (!string.IsNullOrEmpty(pInfo.SourceUrl))
-                        Console.WriteLine($"    Source URL: {pInfo.SourceUrl}");
+                        Console.WriteLine($"    sourceUrl: {pInfo.SourceUrl}");
 
-                    Console.WriteLine("    License :");
+                    Console.WriteLine("    license :");
 
                     if (pInfo.License != null)
                     {
-                        Console.WriteLine($"        Name: {pInfo.License.Name} ");
-                        Console.WriteLine($"        Url: {pInfo.License.Url}");
+                        Console.WriteLine($"        name: {pInfo.License.Name} ");
+                        Console.WriteLine($"        url: {pInfo.License.Url}");
                     }
                 }
             }
 
             var definitionsByPart = result.Definitions
                 .GroupBy(d => d.PartOfSpeech);
-
+            Console.WriteLine("\n meanings :");
             foreach (var group in definitionsByPart)
             {
-                Console.WriteLine($"\n Part of Speech: {group.Key}");
+                Console.WriteLine($"\n partOfSpeech: {group.Key}");
 
                 foreach (var definition in group)
                 {
 
-                    Console.WriteLine($"  Definition:\"{definition.Text} \"");
-
-                    if (!string.IsNullOrEmpty(definition.Example))
-                    {
-                        Console.WriteLine($"       Example: \"{definition.Example}\"");
-                    }
+                    Console.WriteLine($"  definition:\"{definition.Text} \"");                   
 
                     if (definition.Synonyms != null && definition.Synonyms.Any())
                     {
-                        Console.WriteLine($"       Synonyms: {string.Join(", ", definition.Synonyms.Take(5))}");
+                        Console.WriteLine($"       synonyms: {string.Join(", ", definition.Synonyms)}");
                     }
 
                     if (definition.Antonyms != null && definition.Antonyms.Any())
                     {
-                        Console.WriteLine($"       Antonyms: {string.Join(", ", definition.Antonyms.Take(5))}");
+                        Console.WriteLine($"       antonyms: {string.Join(", ", definition.Antonyms)}");
+                    }
+                    if (!string.IsNullOrEmpty(definition.Example))
+                    {
+                        Console.WriteLine($"\n       example: \"{definition.Example}\"");
                     }
                 }
             }

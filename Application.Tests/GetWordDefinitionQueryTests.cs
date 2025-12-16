@@ -24,7 +24,8 @@ namespace Application.Tests
         string word = "hello";
         var expectedDefinition = new WordDefinition ( 
              Word : word,
-             License:null)
+             Phonetic: null
+             )
         { 
             
             Phonetics = new List<PhoneticInfo>() 

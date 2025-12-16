@@ -115,10 +115,12 @@ namespace Infrastructure.ExternalApi
                 .ToList() ?? new List<Definition>();
 
             // 3. Construct the final WordDefinition
+            
+
             return new WordDefinition
               (
                 Word: apiResponse.Word,
-                License: apiResponse.License != null ? new LicenseInfo(apiResponse.License.Name, apiResponse.License.Url) : null
+                Phonetic: apiResponse.Phonetic ?? string.Empty
               )
              {
                 Phonetics = phonetics,
